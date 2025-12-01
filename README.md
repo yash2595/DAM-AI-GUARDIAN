@@ -1,4 +1,4 @@
-# HydroLake Insight 🌊
+# DAM AI GUARDIAN🌊
 
 An intelligent dam monitoring and community alert system built with React, Node.js, and real-time IoT simulation.
 
