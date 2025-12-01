@@ -1,0 +1,19 @@
+{
+  "trained_date": "2025-11-17T11:46:56.078178",
+  "feature_names": [
+    "waterLevel",
+    "pressure",
+    "seepage",
+    "structuralStress",
+    "temperature",
+    "inflow",
+    "outflow",
+    "turbidity",
+    "ph",
+    "dissolvedOxygen",
+    "vibration",
+    "rainfall"
+  ],
+  "model_version": "1.0.0",
+  "description": "Dam Monitoring Risk Prediction Model"
+}
