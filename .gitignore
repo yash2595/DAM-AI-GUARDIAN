@@ -41,7 +41,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -62,3 +61,5 @@ models/*.joblib
 *.bak
 *.swp
 *~.nib
+.vercel
+.env*.local
