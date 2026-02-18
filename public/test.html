@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Page</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+        }
+        h1 { font-size: 48px; margin: 0; }
+        p { font-size: 24px; margin-top: 20px; }
+        .status { color: #4ade80; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ Vite Server Working!</h1>
+        <p>If you can see this, the server is running.</p>
+        <p class="status">Status: ONLINE</p>
+        <p style="font-size: 16px; margin-top: 30px;">
+            Backend: <span id="backend">Checking...</span>
+        </p>
+    </div>
+    <script>
+        // Test backend connection
+        fetch('http://localhost:5000/api/authorities')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('backend').textContent = '✅ Connected';
+                document.getElementById('backend').style.color = '#4ade80';
+            })
+            .catch(err => {
+                document.getElementById('backend').textContent = '❌ Not Connected';
+                document.getElementById('backend').style.color = '#f87171';
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+{
+  "version": "1.0.0",
+  "modelType": "Rule-Based Ensemble (Mock ML)",
+  "trainedDate": "2025-11-10T20:35:55.462Z",
+  "trainingDate": "2025-11-10",
+  "samples": 10000,
+  "distribution": {
+    "safe": 7000,
+    "medium": 2000,
+    "high": 800,
+    "critical": 200
+  },
+  "accuracy": 0.9428967979979062,
+  "features": [
+    "waterLevel",
+    "pressure",
+    "structuralStress",
+    "seepage",
+    "rainfall",
+    "inflow",
+    "vibration",
+    "outflow",
+    "turbidity",
+    "temperature",
+    "ph",
+    "dissolvedOxygen"
+  ],
+  "featureImportance": {
+    "waterLevel": 0.235,
+    "pressure": 0.182,
+    "structuralStress": 0.158,
+    "seepage": 0.124,
+    "rainfall": 0.097,
+    "inflow": 0.083,
+    "vibration": 0.062,
+    "outflow": 0.021,
+    "turbidity": 0.018,
+    "temperature": 0.009,
+    "ph": 0.007,
+    "dissolvedOxygen": 0.004
+  },
+  "riskLevels": [
+    {
+      "level": 0,
+      "label": "Safe",
+      "scoreRange": "0-25"
+    },
+    {
+      "level": 1,
+      "label": "Medium Risk",
+      "scoreRange": "26-50"
+    },
+    {
+      "level": 2,
+      "label": "High Risk",
+      "scoreRange": "51-75"
+    },
+    {
+      "level": 3,
+      "label": "Critical",
+      "scoreRange": "76-100"
+    }
+  ],
+  "models": [
+    {
+      "name": "Water Level Analyzer",
+      "weight": 0.3
+    },
+    {
+      "name": "Pressure Monitor",
+      "weight": 0.2
+    },
+    {
+      "name": "Structural Assessment",
+      "weight": 0.2
+    },
+    {
+      "name": "Seepage Detector",
+      "weight": 0.15
+    },
+    {
+      "name": "Environmental Factors",
+      "weight": 0.15
+    }
+  ],
+  "performance": {
+    "accuracy": 0.9428967979979062,
+    "precision": 0.96208417897543,
+    "recall": 0.9463378321245413,
+    "f1Score": 0.9699026578289679
+  }
+}
