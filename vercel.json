@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "dam-ai-guardian",
   "builds": [
     {
       "src": "package.json",
@@ -8,16 +7,6 @@
       "config": {
         "distDir": "dist"
       }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
     }
   ],
   "rewrites": [
@@ -30,11 +19,7 @@
       "destination": "/index.html"
     }
   ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "outputDirectory": "dist",
-  "installCommand": "npm install",
   "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "framework": "vite"
 }
