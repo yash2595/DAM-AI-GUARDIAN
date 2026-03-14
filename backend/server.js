@@ -17,6 +17,7 @@ const communityRoutes = require('./routes/communityRoutes');
 const socialMediaRoutes = require('./routes/socialMediaRoutes');
 const governmentRoutes = require('./routes/governmentRoutes');
 const chatbotRoutes = require('./routes/chatbotRoutes');
+const damAnalysisRoutes = require('./routes/damAnalysisRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -63,6 +64,7 @@ app.use('/api/community', communityRoutes);
 app.use('/api/social', socialMediaRoutes);
 app.use('/api/government', governmentRoutes);
 app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/dam', damAnalysisRoutes);
 
 // ========================================
 // AI Risk Assessment API (Using ML API)

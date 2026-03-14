@@ -15,6 +15,7 @@ import {
   Map,
   Building2,
   MessageCircle,
+  Camera,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -30,6 +31,7 @@ const Sidebar = () => {
     { to: '/dashboard/alerts', label: t('nav.alerts'), icon: AlertTriangle },
     { to: '/dashboard/historical', label: t('nav.historical'), icon: History },
     { to: '/dashboard/advanced', label: t('nav.advancedFeatures'), icon: Zap },
+    { to: '/dashboard/dam-analysis', label: '📸 Dam Analysis', icon: Camera },
     { to: '/dashboard/community-alerts', label: 'Community Alerts', icon: Users },
     { to: '/dashboard/social-media', label: 'Social Media', icon: Share2 },
     { to: '/dashboard/gis-mapping', label: 'GIS Mapping', icon: Map },

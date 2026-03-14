@@ -24,6 +24,7 @@ import SocialMediaIntegration from './pages/SocialMediaIntegration';
 import GISMapping from './pages/GISMapping';
 import GovernmentIntegration from './pages/GovernmentIntegration';
 import AIChatbot from './pages/AIChatbot';
+import DamAnalysis from './pages/DamAnalysis';
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +56,7 @@ const App = () => (
                 <Route path="gis-mapping" element={<GISMapping />} />
                 <Route path="government" element={<GovernmentIntegration />} />
                 <Route path="chatbot" element={<AIChatbot />} />
+                <Route path="dam-analysis" element={<DamAnalysis />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="admin" element={<Admin />} />
               </Route>

@@ -8,25 +8,29 @@ from flask_cors import CORS
 import numpy as np
 import joblib
 import json
+import os
 from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_DIR = os.path.join(BASE_DIR, 'models')
+
 # Load models
 print("Loading ML models...")
 try:
-    rf_model = joblib.load('models/random_forest.pkl')
-    gb_model = joblib.load('models/gradient_boosting.pkl')
-    nn_model = joblib.load('models/neural_network.pkl')
-    scaler = joblib.load('models/scaler.pkl')
+    rf_model = joblib.load(os.path.join(MODEL_DIR, 'random_forest.pkl'))
+    gb_model = joblib.load(os.path.join(MODEL_DIR, 'gradient_boosting.pkl'))
+    nn_model = joblib.load(os.path.join(MODEL_DIR, 'neural_network.pkl'))
+    scaler = joblib.load(os.path.join(MODEL_DIR, 'scaler.pkl'))
     
-    with open('models/metadata.json', 'r') as f:
+    with open(os.path.join(MODEL_DIR, 'metadata.json'), 'r') as f:
         metadata = json.load(f)
     
-    print("✓ Models loaded successfully!")
+    print("[OK] Models loaded successfully!")
 except Exception as e:
-    print(f"✗ Error loading models: {e}")
+    print(f"[ERROR] Error loading models: {e}")
     print("Please run train_model.py first to train the models.")
     rf_model = gb_model = nn_model = scaler = None
     metadata = {}
@@ -74,7 +78,7 @@ def model_info():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    if not rf_model or not gb_model or not nn_model or not scaler:
+    if rf_model is None or gb_model is None or nn_model is None or scaler is None:
         return jsonify({
             'success': False,
             'error': 'Models not loaded. Please train the models first.'

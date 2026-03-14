@@ -27,12 +27,12 @@ const Predictions = () => {
   ];
 
   const accuracyData = [
-    { month: 'Jan', accuracy: 92 },
-    { month: 'Feb', accuracy: 93 },
-    { month: 'Mar', accuracy: 91 },
-    { month: 'Apr', accuracy: 94 },
-    { month: 'May', accuracy: 95 },
-    { month: 'Jun', accuracy: 94.8 },
+    { month: 'Jan', accuracy: 82 },
+    { month: 'Feb', accuracy: 83 },
+    { month: 'Mar', accuracy: 81 },
+    { month: 'Apr', accuracy: 84 },
+    { month: 'May', accuracy: 85 },
+    { month: 'Jun', accuracy: 83.8 },
   ];
 
   return (
@@ -57,10 +57,10 @@ const Predictions = () => {
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Accuracy</span>
-              <span className="text-foreground font-semibold">92.5%</span>
+              <span className="text-foreground font-semibold">82.5%</span>
             </div>
             <div className="w-full bg-white/10 rounded-full h-2">
-              <div className="bg-primary h-2 rounded-full" style={{ width: '92.5%' }} />
+              <div className="bg-primary h-2 rounded-full" style={{ width: '82.5%' }} />
             </div>
           </div>
         </div>
@@ -78,10 +78,10 @@ const Predictions = () => {
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Accuracy</span>
-              <span className="text-foreground font-semibold">94.8%</span>
+              <span className="text-foreground font-semibold">84.8%</span>
             </div>
             <div className="w-full bg-white/10 rounded-full h-2">
-              <div className="bg-secondary h-2 rounded-full" style={{ width: '94.8%' }} />
+              <div className="bg-secondary h-2 rounded-full" style={{ width: '84.8%' }} />
             </div>
           </div>
         </div>
@@ -99,10 +99,10 @@ const Predictions = () => {
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Accuracy</span>
-              <span className="text-foreground font-semibold">89.3%</span>
+              <span className="text-foreground font-semibold">81.3%</span>
             </div>
             <div className="w-full bg-white/10 rounded-full h-2">
-              <div className="bg-accent h-2 rounded-full" style={{ width: '89.3%' }} />
+              <div className="bg-accent h-2 rounded-full" style={{ width: '81.3%' }} />
             </div>
           </div>
         </div>

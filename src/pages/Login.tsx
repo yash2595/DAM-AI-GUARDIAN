@@ -86,7 +86,7 @@ const Login = () => {
             <div className="glass-card p-4 rounded-xl border-primary/20">
               <div className="flex items-center gap-3 mb-2">
                 <Shield className="w-8 h-8 text-secondary" />
-                <div className="text-3xl font-bold text-foreground">60K+</div>
+                <div className="text-3xl font-bold text-foreground">0</div>
               </div>
               <div className="text-sm text-muted-foreground">Dams Monitored</div>
             </div>
