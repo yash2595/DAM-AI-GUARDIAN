@@ -3,6 +3,8 @@
  * Provides database functionality without requiring MongoDB installation
  */
 
+const bcrypt = require('bcryptjs');
+
 // In-memory storage
 const storage = {
   users: [
@@ -130,60 +132,182 @@ const countDocuments = (collection, query = {}) => {
   return find(collection, query).length;
 };
 
+const attachDocumentMethods = (collection, doc) => {
+  if (!doc || typeof doc !== 'object') return doc;
+
+  const wrapped = { ...doc };
+
+  wrapped.save = async function save() {
+    const items = storage[collection] || [];
+    const index = items.findIndex((item) => item._id === this._id);
+
+    if (index !== -1) {
+      const { save: _save, comparePassword: _comparePassword, ...persistable } = this;
+      items[index] = { ...items[index], ...persistable, updatedAt: new Date() };
+      return attachDocumentMethods(collection, items[index]);
+    }
+
+    const created = create(collection, this);
+    return attachDocumentMethods(collection, created);
+  };
+
+  wrapped.comparePassword = async function comparePassword(candidatePassword) {
+    if (!this.password) return false;
+    return bcrypt.compare(candidatePassword, this.password);
+  };
+
+  return wrapped;
+};
+
+const createQuery = (collection, initialItems, options = {}) => {
+  const single = options.single === true;
+  let items = Array.isArray(initialItems) ? initialItems.map((item) => attachDocumentMethods(collection, item)) : [];
+
+  const query = {
+    sort(sortObj = {}) {
+      const entries = Object.entries(sortObj);
+      if (entries.length === 0) return query;
+
+      const [field, directionRaw] = entries[0];
+      const direction = directionRaw >= 0 ? 1 : -1;
+
+      items = [...items].sort((a, b) => {
+        const av = a?.[field];
+        const bv = b?.[field];
+        if (av === bv) return 0;
+        if (av === undefined || av === null) return 1;
+        if (bv === undefined || bv === null) return -1;
+        return av > bv ? direction : -direction;
+      });
+
+      return query;
+    },
+
+    limit(limitValue) {
+      const n = Number(limitValue);
+      if (!Number.isNaN(n) && n >= 0) {
+        items = items.slice(0, n);
+      }
+      return query;
+    },
+
+    select(fields = '') {
+      if (!fields || typeof fields !== 'string') return query;
+
+      const selectors = fields.split(/\s+/).filter(Boolean);
+
+      selectors.forEach((selector) => {
+        if (selector.startsWith('-')) {
+          const key = selector.slice(1);
+          items = items.map((item) => {
+            const copy = { ...item };
+            delete copy[key];
+            return attachDocumentMethods(collection, copy);
+          });
+        }
+      });
+
+      return query;
+    },
+
+    populate() {
+      return query;
+    },
+
+    exec() {
+      return Promise.resolve(single ? (items[0] || null) : items);
+    },
+
+    then(onFulfilled, onRejected) {
+      return query.exec().then(onFulfilled, onRejected);
+    },
+
+    catch(onRejected) {
+      return query.exec().catch(onRejected);
+    },
+
+    finally(onFinally) {
+      return query.exec().finally(onFinally);
+    }
+  };
+
+  return query;
+};
+
 // Mock database interface
 const mockDB = {
   User: {
-    find: (query) => Promise.resolve(find('users', query)),
-    findOne: (query) => Promise.resolve(findOne('users', query)),
-    findById: (id) => Promise.resolve(findById('users', id)),
-    create: (data) => Promise.resolve(create('users', data)),
+    find: (query = {}) => createQuery('users', find('users', query)),
+    findOne: (query = {}) => createQuery('users', [findOne('users', query)].filter(Boolean), { single: true }),
+    findById: (id) => createQuery('users', [findById('users', id)].filter(Boolean), { single: true }),
+    create: (data) => Promise.resolve(attachDocumentMethods('users', create('users', data))),
     countDocuments: (query) => Promise.resolve(countDocuments('users', query)),
   },
   
   Community: {
-    find: (query) => Promise.resolve(find('communities', query)),
-    findOne: (query) => Promise.resolve(findOne('communities', query)),
-    findById: (id) => Promise.resolve(findById('communities', id)),
-    create: (data) => Promise.resolve(create('communities', data)),
+    find: (query = {}) => createQuery('communities', find('communities', query)),
+    findOne: (query = {}) => createQuery('communities', [findOne('communities', query)].filter(Boolean), { single: true }),
+    findById: (id) => createQuery('communities', [findById('communities', id)].filter(Boolean), { single: true }),
+    create: (data) => Promise.resolve(attachDocumentMethods('communities', create('communities', data))),
     updateOne: (query, update) => Promise.resolve(updateOne('communities', query, update)),
+    updateMany: (query, update) => {
+      const matched = find('communities', query);
+      let modifiedCount = 0;
+
+      matched.forEach((community) => {
+        const updatePayload = { ...update };
+        if (update?.$push?.alertsSent) {
+          const alertsSent = Array.isArray(community.alertsSent) ? [...community.alertsSent] : [];
+          alertsSent.push(update.$push.alertsSent);
+          updatePayload.alertsSent = alertsSent;
+          delete updatePayload.$push;
+        }
+
+        const updated = updateOne('communities', { _id: community._id }, updatePayload);
+        if (updated) modifiedCount += 1;
+      });
+
+      return Promise.resolve({ acknowledged: true, matchedCount: matched.length, modifiedCount });
+    },
+    findByIdAndUpdate: (id, update) => Promise.resolve(attachDocumentMethods('communities', updateOne('communities', { _id: id }, update))),
     deleteOne: (query) => Promise.resolve(deleteOne('communities', query)),
   },
   
   Alert: {
-    find: (query) => Promise.resolve(find('alerts', query)),
-    findOne: (query) => Promise.resolve(findOne('alerts', query)),
-    findById: (id) => Promise.resolve(findById('alerts', id)),
-    create: (data) => Promise.resolve(create('alerts', data)),
+    find: (query = {}) => createQuery('alerts', find('alerts', query)),
+    findOne: (query = {}) => createQuery('alerts', [findOne('alerts', query)].filter(Boolean), { single: true }),
+    findById: (id) => createQuery('alerts', [findById('alerts', id)].filter(Boolean), { single: true }),
+    create: (data) => Promise.resolve(attachDocumentMethods('alerts', create('alerts', data))),
     countDocuments: (query) => Promise.resolve(countDocuments('alerts', query)),
   },
   
   SocialMediaPost: {
-    find: (query) => Promise.resolve(find('socialMediaPosts', query)),
-    findOne: (query) => Promise.resolve(findOne('socialMediaPosts', query)),
-    create: (data) => Promise.resolve(create('socialMediaPosts', data)),
+    find: (query = {}) => createQuery('socialMediaPosts', find('socialMediaPosts', query)),
+    findOne: (query = {}) => createQuery('socialMediaPosts', [findOne('socialMediaPosts', query)].filter(Boolean), { single: true }),
+    create: (data) => Promise.resolve(attachDocumentMethods('socialMediaPosts', create('socialMediaPosts', data))),
   },
   
   ComplianceReport: {
-    find: (query) => Promise.resolve(find('complianceReports', query)),
-    findOne: (query) => Promise.resolve(findOne('complianceReports', query)),
-    findById: (id) => Promise.resolve(findById('complianceReports', id)),
-    create: (data) => Promise.resolve(create('complianceReports', data)),
+    find: (query = {}) => createQuery('complianceReports', find('complianceReports', query)),
+    findOne: (query = {}) => createQuery('complianceReports', [findOne('complianceReports', query)].filter(Boolean), { single: true }),
+    findById: (id) => createQuery('complianceReports', [findById('complianceReports', id)].filter(Boolean), { single: true }),
+    create: (data) => Promise.resolve(attachDocumentMethods('complianceReports', create('complianceReports', data))),
   },
   
   ChatConversation: {
-    find: (query) => Promise.resolve(find('chatConversations', query)),
-    findOne: (query) => Promise.resolve(findOne('chatConversations', query)),
-    findById: (id) => Promise.resolve(findById('chatConversations', id)),
-    create: (data) => Promise.resolve(create('chatConversations', data)),
+    find: (query = {}) => createQuery('chatConversations', find('chatConversations', query)),
+    findOne: (query = {}) => createQuery('chatConversations', [findOne('chatConversations', query)].filter(Boolean), { single: true }),
+    findById: (id) => createQuery('chatConversations', [findById('chatConversations', id)].filter(Boolean), { single: true }),
+    create: (data) => Promise.resolve(attachDocumentMethods('chatConversations', create('chatConversations', data))),
     findByIdAndDelete: (id) => Promise.resolve(deleteOne('chatConversations', { _id: id })),
     countDocuments: (query) => Promise.resolve(countDocuments('chatConversations', query)),
     aggregate: (pipeline) => Promise.resolve([{ _id: null, total: storage.chatConversations.length }]),
   },
   
   SensorData: {
-    find: (query) => Promise.resolve(find('sensorData', query)),
-    findOne: (query) => Promise.resolve(findOne('sensorData', query)),
-    create: (data) => Promise.resolve(create('sensorData', data)),
+    find: (query = {}) => createQuery('sensorData', find('sensorData', query)),
+    findOne: (query = {}) => createQuery('sensorData', [findOne('sensorData', query)].filter(Boolean), { single: true }),
+    create: (data) => Promise.resolve(attachDocumentMethods('sensorData', create('sensorData', data))),
   },
 };
 
