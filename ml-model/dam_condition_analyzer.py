@@ -37,6 +37,19 @@ class DamConditionAnalyzer:
             
             # Convert to numpy array
             image_array = np.array(image)
+
+            # --- PRE-VALIDATION: Check if it's likely a dam or relevant structure ---
+            # 1. Aspect Ratio check (optional but dams are usually wider)
+            # 2. Color Profile check (Dams are mostly gray/brown/green)
+            # 3. Roughness/Texture check
+            
+            is_valid, validation_msg = self._validate_dam_image(image_array)
+            if not is_valid:
+                return {
+                    'status': 'error',
+                    'message': validation_msg,
+                    'error_type': 'ValidationError'
+                }
             
             # Convert BGR to grayscale if needed
             if len(image_array.shape) == 3:
@@ -61,35 +74,35 @@ class DamConditionAnalyzer:
             return {
                 'status': 'success',
                 'timestamp': datetime.now().isoformat(),
-                'overall_condition': condition_level,
-                'condition_score': round(overall_score, 2),  # 0-100
+                'overall_condition': int(condition_level),
+                'condition_score': float(round(overall_score, 2)),  # 0-100
                 'risk_level': self.condition_levels[condition_level]['risk'],
                 'analysis': {
                     'cracks': {
-                        'detected': results['cracks']['detected'],
+                        'detected': bool(results['cracks']['detected']),
                         'severity': results['cracks']['severity'],  # None, Minor, Moderate, Severe
-                        'coverage': round(results['cracks']['coverage'], 2)  # percentage
+                        'coverage': float(round(results['cracks']['coverage'], 2))  # percentage
                     },
                     'surface_wear': {
                         'level': results['surface_wear']['level'],  # None, Minor, Moderate, Severe
-                        'coverage': round(results['surface_wear']['coverage'], 2)
+                        'coverage': float(round(results['surface_wear']['coverage'], 2))
                     },
                     'moisture': {
-                        'detected': results['moisture']['detected'],
+                        'detected': bool(results['moisture']['detected']),
                         'level': results['moisture']['level'],  # Low, Medium, High
-                        'areas': results['moisture']['affected_areas']
+                        'areas': int(results['moisture']['affected_areas'])
                     },
                     'algae_growth': {
-                        'detected': results['algae_growth']['detected'],
-                        'coverage': round(results['algae_growth']['coverage'], 2)
+                        'detected': bool(results['algae_growth']['detected']),
+                        'coverage': float(round(results['algae_growth']['coverage'], 2))
                     },
                     'structural_damage': {
-                        'detected': results['structural_damage']['detected'],
+                        'detected': bool(results['structural_damage']['detected']),
                         'severity': results['structural_damage']['severity'],
-                        'areas': results['structural_damage']['damaged_areas']
+                        'areas': int(results['structural_damage']['damaged_areas'])
                     },
                     'erosion': {
-                        'detected': results['erosion']['detected'],
+                        'detected': bool(results['erosion']['detected']),
                         'level': results['erosion']['level']
                     }
                 },
@@ -132,10 +145,10 @@ class DamConditionAnalyzer:
             severity = 'Severe'
         
         return {
-            'detected': coverage > 0.5,
+            'detected': bool(coverage > 0.5),
             'severity': severity,
-            'coverage': coverage,
-            'pixel_count': crack_pixels
+            'coverage': float(coverage),
+            'pixel_count': int(crack_pixels)
         }
     
     def _assess_surface_wear(self, gray):
@@ -385,6 +398,75 @@ class DamConditionAnalyzer:
             return 'IMMEDIATE'
         else:
             return f'{months_until} month{"s" if months_until > 1 else ""}'
+
+    def _validate_dam_image(self, image_array):
+        """
+        Validates if the image is likely a dam or structural component.
+        Checks for:
+        1. Sufficient texture (not a flat color image/blank)
+        2. Color profile (gray/brown tones typical of dams)
+        3. Structural presence (meaningful edge density)
+        4. Not pure random noise
+        5. Not text, landscapes, or synthetic images
+        """
+        # 1. Check for blank or flat color images
+        if len(image_array.shape) == 3:
+            gray = cv2.cvtColor(image_array, cv2.COLOR_RGB2GRAY)
+        else:
+            gray = image_array
+            
+        std_dev = np.std(gray)
+        if float(std_dev) < 10:
+            return False, "Upload relevant image: Input is too flat or contains no visible details."
+
+        # 2. Enhanced Color profile validation - Dams are typically gray/brown
+        if len(image_array.shape) == 3:
+            hsv = cv2.cvtColor(image_array, cv2.COLOR_RGB2HSV)
+            avg_saturation = np.mean(hsv[:,:,1])
+            avg_hue = np.mean(hsv[:,:,0])
+            
+            # Reject images with high green (landscapes) or uniform light colors (text/documents)
+            # High saturation indicates flowers, green nature, colorful scenes
+            if float(avg_saturation) > 180:
+                return False, "Upload relevant image: Image appears to be synthetic or irrelevant."
+            
+            # Green tones (hue 25-90) = grass/trees/vegetation
+            # Stricter threshold: >15% green indicates landscape
+            green_mask = ((hsv[:,:,0] > 25) & (hsv[:,:,0] < 90))
+            green_pixels = np.count_nonzero(green_mask)
+            green_ratio = green_pixels / hsv.size
+            
+            # If >15% green, it's likely a landscape
+            if float(green_ratio) > 0.15:
+                return False, "Upload relevant image: This appears to be a landscape or natural vegetation, not a dam."
+            
+            # Check for predominantly light colors (documents, text)
+            light_pixels = np.count_nonzero(hsv[:,:,2] > 200)  # Very bright
+            light_ratio = light_pixels / hsv.size
+            
+            # If >20% very light and low saturation (<100), it's likely text/document
+            if float(light_ratio) > 0.20 and float(avg_saturation) < 100:
+                return False, "Upload relevant image: This appears to be a document or text image, not a dam."
+
+        # 3. Structural presence (Edge Density with coherence check)
+        edges = cv2.Canny(gray, 100, 200)
+        edge_density = np.count_nonzero(edges) / gray.size
+        
+        if float(edge_density) < 0.005:
+            return False, "Upload relevant image: No structural details detected in the photo."
+        
+        # 4. Check for random noise (high-frequency incoherent edges)
+        # Laplacian detects fine detail; too much laplacian = noise
+        laplacian = cv2.Laplacian(gray, cv2.CV_64F)
+        laplacian_variance = np.var(laplacian)
+        
+        if float(laplacian_variance) > 40000:
+            return False, "Upload relevant image: Image contains too much noise or random patterns."
+            
+        if float(edge_density) > 0.35:
+             return False, "Upload relevant image: The photo is too noisy or busy to be a clear dam structure."
+
+        return True, "Valid image"
 
 # Test the analyzer
 if __name__ == "__main__":

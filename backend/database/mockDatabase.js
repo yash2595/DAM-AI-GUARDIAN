@@ -58,6 +58,10 @@ const storage = {
     }
   ],
   alerts: [],
+  authorities: [
+    { _id: 'auth_1', name: 'Dam Safety Officer', email: 'admin@hydrolake.gov.in', role: 'Primary', isActive: true, createdAt: new Date() },
+    { _id: 'auth_2', name: 'District Collector', email: 'collector@gov.in', role: 'Secondary', isActive: true, createdAt: new Date() }
+  ],
   socialMediaPosts: [],
   complianceReports: [],
   chatConversations: [],
@@ -308,6 +312,15 @@ const mockDB = {
     find: (query = {}) => createQuery('sensorData', find('sensorData', query)),
     findOne: (query = {}) => createQuery('sensorData', [findOne('sensorData', query)].filter(Boolean), { single: true }),
     create: (data) => Promise.resolve(attachDocumentMethods('sensorData', create('sensorData', data))),
+  },
+
+  Authority: {
+    find: (query = {}) => createQuery('authorities', find('authorities', query)),
+    findOne: (query = {}) => createQuery('authorities', [findOne('authorities', query)].filter(Boolean), { single: true }),
+    findById: (id) => createQuery('authorities', [findById('authorities', id)].filter(Boolean), { single: true }),
+    create: (data) => Promise.resolve(attachDocumentMethods('authorities', create('authorities', data))),
+    findOneAndDelete: (query) => { const item = findOne('authorities', query); if (item) deleteOne('authorities', query); return Promise.resolve(item); },
+    findByIdAndDelete: (id) => { const item = findById('authorities', id); if (item) deleteOne('authorities', { _id: id }); return Promise.resolve(item); },
   },
 };
 

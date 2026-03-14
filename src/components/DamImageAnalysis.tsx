@@ -127,7 +127,7 @@ const DamImageAnalysis = () => {
     <div className="w-full max-w-6xl mx-auto p-4 space-y-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">🏗️ Dam Physical Condition Analysis</h1>
+        <h1 className="text-3xl font-bold mb-2 text-blue-600">🏗️ Dam Physical Condition Analysis</h1>
         <p className="text-gray-600">Upload a photo of your dam to analyze its physical condition</p>
       </div>
 

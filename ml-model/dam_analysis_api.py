@@ -9,6 +9,7 @@ import base64
 import io
 from PIL import Image
 import traceback
+import numpy as np
 from dam_condition_analyzer import DamConditionAnalyzer
 
 app = Flask(__name__)
@@ -55,7 +56,7 @@ def analyze_dam():
         # Analyze image
         result = analyzer.analyze_image(data['image'])
         
-        if result['status'] == 'error':
+        if result.get('status') == 'error':
             return jsonify({'error': result.get('message', 'Analysis failed')}), 400
         
         # Add metadata to result
@@ -66,7 +67,22 @@ def analyze_dam():
             'construction_year': construction_year
         }
         
-        return jsonify(result), 200
+        # Final safety check for JSON serializability
+        def force_serializable(obj):
+            if isinstance(obj, dict):
+                return {k: force_serializable(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [force_serializable(x) for x in obj]
+            elif isinstance(obj, (np.integer, np.floating, np.bool_)):
+                if isinstance(obj, np.bool_):
+                    return bool(obj)
+                return obj.item()
+            elif isinstance(obj, np.ndarray):
+                return force_serializable(obj.tolist())
+            return obj
+
+        serializable_result = force_serializable(result)
+        return jsonify(serializable_result), 200
     
     except Exception as e:
         print(f"Error in analyze_dam: {str(e)}")
@@ -260,4 +276,4 @@ if __name__ == '__main__':
     print("  GET  /sample-analysis     - Get sample analysis result")
     print("\n" + "="*60)
     
-    app.run(debug=False, host='0.0.0.0', port=5002)
+    app.run(debug=True, host='0.0.0.0', port=5002)

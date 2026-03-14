@@ -94,7 +94,7 @@ const Login = () => {
             <div className="glass-card p-4 rounded-xl border-primary/20">
               <div className="flex items-center gap-3 mb-2">
                 <Activity className="w-8 h-8 text-primary" />
-                <div className="text-3xl font-bold text-foreground">94.8%</div>
+                <div className="text-3xl font-bold text-foreground">82.2%</div>
               </div>
               <div className="text-sm text-muted-foreground">AI Accuracy</div>
             </div>
@@ -110,7 +110,7 @@ const Login = () => {
             <div className="glass-card p-4 rounded-xl border-primary/20">
               <div className="flex items-center gap-3 mb-2">
                 <Lock className="w-8 h-8 text-accent" />
-                <div className="text-3xl font-bold text-foreground">2.5M</div>
+                <div className="text-3xl font-bold text-foreground">0</div>
               </div>
               <div className="text-sm text-muted-foreground">Lives Protected</div>
             </div>
@@ -205,7 +205,7 @@ const Login = () => {
             >
               <div className="text-left">
                 <div className="font-medium">Admin Account</div>
-                <div className="text-xs text-muted-foreground">Sachin Agarwal - Project Guide</div>
+                <div className="text-xs text-muted-foreground">abc - Project Guide</div>
               </div>
             </Button>
 
@@ -217,19 +217,7 @@ const Login = () => {
             >
               <div className="text-left">
                 <div className="font-medium">Engineer Account</div>
-                <div className="text-xs text-muted-foreground">Rajesh Kumar - Safety Engineer</div>
-              </div>
-            </Button>
-
-            <Button
-              variant="outline"
-              className="w-full justify-start glass-card glass-card-hover"
-              onClick={() => handleDemoLogin('viewer@dam.com', 'demo123')}
-              disabled={isLoading}
-            >
-              <div className="text-left">
-                <div className="font-medium">Viewer Account</div>
-                <div className="text-xs text-muted-foreground">Priya Sharma - Government Official</div>
+                <div className="text-xs text-muted-foreground">pqr - Safety Engineer</div>
               </div>
             </Button>
           </div>

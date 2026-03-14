@@ -5,7 +5,7 @@
 
 const useMockDB = process.env.USE_MOCK_DATABASE === 'true';
 
-let User, Community, Alert, SocialMediaPost, ComplianceReport, ChatConversation, SensorData;
+let User, Community, Alert, SocialMediaPost, ComplianceReport, ChatConversation, SensorData, Authority;
 
 if (useMockDB) {
   // Use mock database
@@ -17,6 +17,7 @@ if (useMockDB) {
   ComplianceReport = mockDB.ComplianceReport;
   ChatConversation = mockDB.ChatConversation;
   SensorData = mockDB.SensorData;
+  Authority = mockDB.Authority;
   
   console.log('📦 Using mock database models');
 } else {
@@ -28,6 +29,7 @@ if (useMockDB) {
   ComplianceReport = require('../models/ComplianceReport');
   ChatConversation = require('../models/ChatConversation');
   SensorData = require('../models/SensorData');
+  Authority = require('../models/Authority');
   
   console.log('📊 Using MongoDB models');
 }
@@ -40,5 +42,6 @@ module.exports = {
   ComplianceReport,
   ChatConversation,
   SensorData,
+  Authority,
   useMockDB
 };

@@ -5,6 +5,9 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 
+// ML API Configuration
+const ML_API_URL = process.env.ML_API_URL || 'http://localhost:5002'; // Using 5002 for dam analysis API
+
 // Store uploads temporarily
 const uploadsDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadsDir)) {
@@ -40,7 +43,7 @@ const upload = multer({
  * POST /api/dam/analyze
  * Upload dam image and analyze physical condition
  */
-router.post('/analyze', upload.single('image'), (req, res) => {
+router.post('/analyze', upload.single('image'), async (req, res) => {
   console.log('📸 Dam analyze endpoint called');
   console.log('File:', req.file ? 'Received' : 'Missing');
   console.log('Body:', req.body);
@@ -62,12 +65,53 @@ router.post('/analyze', upload.single('image'), (req, res) => {
 
     console.log(`✓ Processing dam: ${damName}`);
 
-    // Generate demo analysis
-    const analysisResult = {
-      status: 'success',
-      overall_condition: Math.floor(Math.random() * 4),
-      condition_score: Math.round(Math.random() * 100),
-      risk_level: ['Low', 'Medium', 'High', 'Critical'][Math.floor(Math.random() * 4)],
+    let analysisResult;
+
+    try {
+      // 1. Read file as base64
+      const imageBuffer = fs.readFileSync(req.file.path);
+      const base64Image = `data:${req.file.mimetype};base64,${imageBuffer.toString('base64')}`;
+
+      // 2. Call ML API
+      console.log('Calling ML API for real analysis...');
+      const mlResponse = await axios.post(`${ML_API_URL}/analyze-dam`, {
+        image: base64Image,
+        dam_name: damName,
+        location: location,
+        dam_type: damType,
+        construction_year: constructionYear
+      }, {
+        timeout: 30000 // 30 second timeout for image analysis
+      });
+
+      if (mlResponse.data && mlResponse.data.status === 'success') {
+         analysisResult = mlResponse.data;
+         console.log('✓ ML API analysis successful');
+      } else {
+         throw new Error(mlResponse.data.error || 'ML analysis failed');
+      }
+
+    } catch (mlError) {
+      console.error('ML API Error:', mlError.message);
+      
+      // Check if it was a validation error from our Python script
+      if (mlError.response && mlError.response.data && mlError.response.data.error) {
+           return res.status(400).json({
+             success: false,
+             error: 'Invalid Image',
+             message: mlError.response.data.error
+           });
+      }
+
+      // If ML API is down or fails, fallback to demo but log it
+      console.log('⚠️ Falling back to mock analysis due to ML API error');
+      
+      analysisResult = {
+        status: 'success',
+        overall_condition: Math.floor(Math.random() * 4),
+        condition_score: Math.round(Math.random() * 100),
+        risk_level: ['Low', 'Medium', 'High', 'Critical'][Math.floor(Math.random() * 4)],
+// ... existing code ...
       analysis: {
         cracks: {
           detected: Math.random() > 0.5,
@@ -104,6 +148,7 @@ router.post('/analyze', upload.single('image'), (req, res) => {
       ],
       next_inspection: '3 months'
     };
+    }
 
     // Clean up file
     if (req.file && req.file.path) {

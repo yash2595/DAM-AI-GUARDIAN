@@ -26,7 +26,7 @@ const demoAccounts = [
     id: '1',
     email: 'admin@dam.com',
     password: 'demo123',
-    name: 'Sachin Agarwal',
+    name: 'abc',
     role: 'Project Guide',
     organization: 'IMS Engineering College',
   },
@@ -34,17 +34,9 @@ const demoAccounts = [
     id: '2',
     email: 'engineer@dam.com',
     password: 'demo123',
-    name: 'Rajesh Kumar',
+    name: 'pqr',
     role: 'Safety Engineer',
     organization: 'Central Water Commission',
-  },
-  {
-    id: '3',
-    email: 'viewer@dam.com',
-    password: 'demo123',
-    name: 'Priya Sharma',
-    role: 'Government Official',
-    organization: 'Ministry of Water Resources',
   },
 ];
 
